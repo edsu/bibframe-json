@@ -67,11 +67,26 @@ A literal keeps its language or its datatype when it has one:
 
 ```json
 "title": [
-  { "@type": ["Title"], "mainTitle": ["Trudy Instituta Obshchcei Fiziki"] },
-  { "@type": ["Title"], "mainTitle": [
-      { "@value": "Труды Института Общц̳еи Физики", "@language": "ru-cyrl" }] }
+  { 
+    "@type": ["Title"],
+    "mainTitle": ["Trudy Instituta Obshchcei Fiziki"]
+  },
+  {
+    "@type": ["Title"],
+    "mainTitle": [
+      {
+        "@value": "Труды Института Общц̳еи Физики",
+        "@language": "ru-cyrl"
+      }
+    ]
+  }
 ],
-"date": [{ "@value": "199X", "@type": "http://id.loc.gov/datatypes/edtf" }]
+"date": [
+  {
+    "@value": "199X",
+    "@type": "http://id.loc.gov/datatypes/edtf"
+  }
+]
 ```
 
 Those two titles are one title in two scripts, and the language tag
