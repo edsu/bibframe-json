@@ -1,0 +1,785 @@
+{
+  "@context": {
+    "@version": 1.1,
+    "@vocab": "http://id.loc.gov/ontologies/bibframe/",
+    "bf": "http://id.loc.gov/ontologies/bibframe/",
+    "bflc": "http://id.loc.gov/ontologies/bflc/",
+    "mads": "http://www.loc.gov/mads/rdf/v1#",
+    "rdf": "http://www.w3.org/1999/02/22-rdf-syntax-ns#",
+    "rdfs": "http://www.w3.org/2000/01/rdf-schema#",
+    "absorbed": {
+      "@container": "@set"
+    },
+    "absorbedBy": {
+      "@container": "@set"
+    },
+    "accompaniedBy": {
+      "@container": "@set"
+    },
+    "accompanies": {
+      "@container": "@set"
+    },
+    "acquisitionSource": {
+      "@container": "@set"
+    },
+    "acquisitionTerms": {
+      "@container": "@set"
+    },
+    "adminMetadata": {
+      "@container": "@set"
+    },
+    "adminMetadataFor": {
+      "@container": "@set"
+    },
+    "agent": {
+      "@container": "@set"
+    },
+    "agentOf": {
+      "@container": "@set"
+    },
+    "appliedMaterial": {
+      "@container": "@set"
+    },
+    "appliedMaterialOf": {
+      "@container": "@set"
+    },
+    "arrangement": {
+      "@container": "@set"
+    },
+    "arrangementOf": {
+      "@container": "@set"
+    },
+    "ascensionAndDeclination": {
+      "@container": "@set"
+    },
+    "aspectRatio": {
+      "@container": "@set"
+    },
+    "assigner": {
+      "@container": "@set"
+    },
+    "associatedResource": {
+      "@container": "@set"
+    },
+    "awards": {
+      "@container": "@set"
+    },
+    "baseMaterial": {
+      "@container": "@set"
+    },
+    "baseMaterialOf": {
+      "@container": "@set"
+    },
+    "binding": {
+      "@container": "@set"
+    },
+    "bookFormat": {
+      "@container": "@set"
+    },
+    "capture": {
+      "@container": "@set"
+    },
+    "carrier": {
+      "@container": "@set"
+    },
+    "cartographicAttributes": {
+      "@container": "@set"
+    },
+    "changeDate": {
+      "@container": "@set"
+    },
+    "classification": {
+      "@container": "@set"
+    },
+    "classificationPortion": {
+      "@container": "@set"
+    },
+    "code": {
+      "@container": "@set"
+    },
+    "collectionArrangement": {
+      "@container": "@set"
+    },
+    "collectionArrangementOf": {
+      "@container": "@set"
+    },
+    "collectionOrganization": {
+      "@container": "@set"
+    },
+    "colorContent": {
+      "@container": "@set"
+    },
+    "content": {
+      "@container": "@set"
+    },
+    "contentAccessibility": {
+      "@container": "@set"
+    },
+    "continuedBy": {
+      "@container": "@set"
+    },
+    "continuedInPartBy": {
+      "@container": "@set"
+    },
+    "continues": {
+      "@container": "@set"
+    },
+    "continuesInPart": {
+      "@container": "@set"
+    },
+    "contribution": {
+      "@container": "@set"
+    },
+    "contributionOf": {
+      "@container": "@set"
+    },
+    "coordinates": {
+      "@container": "@set"
+    },
+    "copyrightDate": {
+      "@container": "@set"
+    },
+    "copyrightRegistration": {
+      "@container": "@set"
+    },
+    "count": {
+      "@container": "@set"
+    },
+    "coverArt": {
+      "@container": "@set"
+    },
+    "creationDate": {
+      "@container": "@set"
+    },
+    "credits": {
+      "@container": "@set"
+    },
+    "custodialHistory": {
+      "@container": "@set"
+    },
+    "dataSource": {
+      "@container": "@set"
+    },
+    "date": {
+      "@container": "@set"
+    },
+    "degree": {
+      "@container": "@set"
+    },
+    "derivativeOf": {
+      "@container": "@set"
+    },
+    "derivedFrom": {
+      "@container": "@set"
+    },
+    "descriptionAuthentication": {
+      "@container": "@set"
+    },
+    "descriptionConventions": {
+      "@container": "@set"
+    },
+    "descriptionLanguage": {
+      "@container": "@set"
+    },
+    "descriptionLevel": {
+      "@container": "@set",
+      "@type": "@id"
+    },
+    "descriptionModifier": {
+      "@container": "@set"
+    },
+    "digitalCharacteristic": {
+      "@container": "@set"
+    },
+    "dimensions": {
+      "@container": "@set"
+    },
+    "dissertation": {
+      "@container": "@set"
+    },
+    "distributionStatement": {
+      "@container": "@set"
+    },
+    "dramaticRole": {
+      "@container": "@set"
+    },
+    "duration": {
+      "@container": "@set"
+    },
+    "edition": {
+      "@container": "@set"
+    },
+    "editionEnumeration": {
+      "@container": "@set"
+    },
+    "editionStatement": {
+      "@container": "@set"
+    },
+    "electronicLocator": {
+      "@container": "@set",
+      "@type": "@id"
+    },
+    "emulsion": {
+      "@container": "@set"
+    },
+    "ensemble": {
+      "@container": "@set"
+    },
+    "ensembleSize": {
+      "@container": "@set"
+    },
+    "ensembleType": {
+      "@container": "@set"
+    },
+    "enumerationAndChronology": {
+      "@container": "@set"
+    },
+    "equinox": {
+      "@container": "@set"
+    },
+    "eventContent": {
+      "@container": "@set"
+    },
+    "eventContentOf": {
+      "@container": "@set"
+    },
+    "exclusionGRing": {
+      "@container": "@set"
+    },
+    "expressionOf": {
+      "@container": "@set"
+    },
+    "extent": {
+      "@container": "@set"
+    },
+    "findingAid": {
+      "@container": "@set"
+    },
+    "findingAidOf": {
+      "@container": "@set"
+    },
+    "firstIssue": {
+      "@container": "@set"
+    },
+    "fontSize": {
+      "@container": "@set"
+    },
+    "frequency": {
+      "@container": "@set"
+    },
+    "generation": {
+      "@container": "@set"
+    },
+    "generationDate": {
+      "@container": "@set"
+    },
+    "generationProcess": {
+      "@container": "@set",
+      "@type": "@id"
+    },
+    "genreForm": {
+      "@container": "@set"
+    },
+    "geographicCoverage": {
+      "@container": "@set"
+    },
+    "grantingInstitution": {
+      "@container": "@set"
+    },
+    "hasDerivative": {
+      "@container": "@set"
+    },
+    "hasExpression": {
+      "@container": "@set"
+    },
+    "hasInstance": {
+      "@container": "@set"
+    },
+    "hasItem": {
+      "@container": "@set",
+      "@type": "@id"
+    },
+    "hasPart": {
+      "@container": "@set"
+    },
+    "hasReproduction": {
+      "@container": "@set"
+    },
+    "hasSeries": {
+      "@container": "@set"
+    },
+    "hasSubseries": {
+      "@container": "@set"
+    },
+    "heldBy": {
+      "@container": "@set"
+    },
+    "hierarchicalLevel": {
+      "@container": "@set"
+    },
+    "historyOfWork": {
+      "@container": "@set"
+    },
+    "identifiedBy": {
+      "@container": "@set"
+    },
+    "identifies": {
+      "@container": "@set"
+    },
+    "illustrativeContent": {
+      "@container": "@set"
+    },
+    "immediateAcquisition": {
+      "@container": "@set"
+    },
+    "index": {
+      "@container": "@set"
+    },
+    "indexOf": {
+      "@container": "@set"
+    },
+    "instanceOf": {
+      "@container": "@set",
+      "@type": "@id"
+    },
+    "instrument": {
+      "@container": "@set"
+    },
+    "instrumentalType": {
+      "@container": "@set"
+    },
+    "intendedAudience": {
+      "@container": "@set"
+    },
+    "issuance": {
+      "@container": "@set"
+    },
+    "itemOf": {
+      "@container": "@set",
+      "@type": "@id"
+    },
+    "itemPortion": {
+      "@container": "@set"
+    },
+    "keyMode": {
+      "@container": "@set"
+    },
+    "language": {
+      "@container": "@set"
+    },
+    "lastIssue": {
+      "@container": "@set"
+    },
+    "layout": {
+      "@container": "@set"
+    },
+    "legalDate": {
+      "@container": "@set"
+    },
+    "mainTitle": {
+      "@container": "@set"
+    },
+    "manufactureStatement": {
+      "@container": "@set"
+    },
+    "material": {
+      "@container": "@set"
+    },
+    "materialOf": {
+      "@container": "@set"
+    },
+    "media": {
+      "@container": "@set"
+    },
+    "mediumComponent": {
+      "@container": "@set"
+    },
+    "mediumComponentQualifier": {
+      "@container": "@set"
+    },
+    "mediumOfPerformance": {
+      "@container": "@set"
+    },
+    "mergedToForm": {
+      "@container": "@set"
+    },
+    "mergerOf": {
+      "@container": "@set"
+    },
+    "mode": {
+      "@container": "@set"
+    },
+    "mount": {
+      "@container": "@set"
+    },
+    "musicFormat": {
+      "@container": "@set"
+    },
+    "musicKey": {
+      "@container": "@set"
+    },
+    "musicMedium": {
+      "@container": "@set"
+    },
+    "musicOpusNumber": {
+      "@container": "@set"
+    },
+    "musicSerialNumber": {
+      "@container": "@set"
+    },
+    "musicThematicNumber": {
+      "@container": "@set"
+    },
+    "natureOfContent": {
+      "@container": "@set"
+    },
+    "notation": {
+      "@container": "@set"
+    },
+    "note": {
+      "@container": "@set"
+    },
+    "noteFor": {
+      "@container": "@set"
+    },
+    "noteType": {
+      "@container": "@set"
+    },
+    "numberOfHands": {
+      "@container": "@set"
+    },
+    "originDate": {
+      "@container": "@set"
+    },
+    "originPlace": {
+      "@container": "@set"
+    },
+    "originalVersion": {
+      "@container": "@set"
+    },
+    "originalVersionOf": {
+      "@container": "@set"
+    },
+    "outerGRing": {
+      "@container": "@set"
+    },
+    "part": {
+      "@container": "@set"
+    },
+    "partName": {
+      "@container": "@set"
+    },
+    "partNumber": {
+      "@container": "@set"
+    },
+    "partOf": {
+      "@container": "@set"
+    },
+    "pattern": {
+      "@container": "@set"
+    },
+    "phonogramDate": {
+      "@container": "@set"
+    },
+    "physicalLocation": {
+      "@container": "@set"
+    },
+    "place": {
+      "@container": "@set"
+    },
+    "polarity": {
+      "@container": "@set"
+    },
+    "precededBy": {
+      "@container": "@set"
+    },
+    "preferredCitation": {
+      "@container": "@set"
+    },
+    "productionMethod": {
+      "@container": "@set"
+    },
+    "productionStatement": {
+      "@container": "@set"
+    },
+    "projection": {
+      "@container": "@set"
+    },
+    "projectionCharacteristic": {
+      "@container": "@set"
+    },
+    "provisionActivity": {
+      "@container": "@set"
+    },
+    "provisionActivityStatement": {
+      "@container": "@set"
+    },
+    "pubFrequency": {
+      "@container": "@set"
+    },
+    "publicationStatement": {
+      "@container": "@set"
+    },
+    "qualifier": {
+      "@container": "@set"
+    },
+    "reductionRatio": {
+      "@container": "@set"
+    },
+    "referencedBy": {
+      "@container": "@set"
+    },
+    "references": {
+      "@container": "@set"
+    },
+    "relation": {
+      "@container": "@set"
+    },
+    "relationship": {
+      "@container": "@set"
+    },
+    "relief": {
+      "@container": "@set"
+    },
+    "replacedBy": {
+      "@container": "@set"
+    },
+    "replacementOf": {
+      "@container": "@set"
+    },
+    "reproductionOf": {
+      "@container": "@set"
+    },
+    "responsibilityStatement": {
+      "@container": "@set"
+    },
+    "review": {
+      "@container": "@set"
+    },
+    "role": {
+      "@container": "@set"
+    },
+    "scale": {
+      "@container": "@set"
+    },
+    "schedulePart": {
+      "@container": "@set"
+    },
+    "separatedFrom": {
+      "@container": "@set"
+    },
+    "seriesEnumeration": {
+      "@container": "@set"
+    },
+    "seriesOf": {
+      "@container": "@set"
+    },
+    "seriesStatement": {
+      "@container": "@set"
+    },
+    "shelfMark": {
+      "@container": "@set"
+    },
+    "soundCharacteristic": {
+      "@container": "@set"
+    },
+    "soundContent": {
+      "@container": "@set"
+    },
+    "source": {
+      "@container": "@set"
+    },
+    "spanEnd": {
+      "@container": "@set"
+    },
+    "splitInto": {
+      "@container": "@set"
+    },
+    "status": {
+      "@container": "@set"
+    },
+    "subject": {
+      "@container": "@set"
+    },
+    "subjectOf": {
+      "@container": "@set"
+    },
+    "sublocation": {
+      "@container": "@set"
+    },
+    "subseriesEnumeration": {
+      "@container": "@set"
+    },
+    "subseriesOf": {
+      "@container": "@set"
+    },
+    "subseriesStatement": {
+      "@container": "@set"
+    },
+    "subtitle": {
+      "@container": "@set"
+    },
+    "succeededBy": {
+      "@container": "@set"
+    },
+    "summary": {
+      "@container": "@set"
+    },
+    "supplement": {
+      "@container": "@set"
+    },
+    "supplementTo": {
+      "@container": "@set"
+    },
+    "supplementaryContent": {
+      "@container": "@set"
+    },
+    "systemRequirement": {
+      "@container": "@set"
+    },
+    "table": {
+      "@container": "@set"
+    },
+    "tableOfContents": {
+      "@container": "@set"
+    },
+    "tableSeq": {
+      "@container": "@set"
+    },
+    "tempo": {
+      "@container": "@set"
+    },
+    "temporalCoverage": {
+      "@container": "@set"
+    },
+    "title": {
+      "@container": "@set"
+    },
+    "titleOf": {
+      "@container": "@set"
+    },
+    "translation": {
+      "@container": "@set"
+    },
+    "translationOf": {
+      "@container": "@set"
+    },
+    "unit": {
+      "@container": "@set"
+    },
+    "usageAndAccessPolicy": {
+      "@container": "@set"
+    },
+    "usesMediumOfPerformance": {
+      "@container": "@set"
+    },
+    "validDate": {
+      "@container": "@set"
+    },
+    "variantType": {
+      "@container": "@set"
+    },
+    "version": {
+      "@container": "@set"
+    },
+    "videoCharacteristic": {
+      "@container": "@set"
+    },
+    "voice": {
+      "@container": "@set"
+    },
+    "voiceType": {
+      "@container": "@set"
+    },
+    "bflc:aap": {
+      "@id": "http://id.loc.gov/ontologies/bflc/aap",
+      "@container": "@set"
+    },
+    "bflc:aap-normalized": {
+      "@id": "http://id.loc.gov/ontologies/bflc/aap-normalized",
+      "@container": "@set"
+    },
+    "bflc:applicableInstitution": {
+      "@id": "http://id.loc.gov/ontologies/bflc/applicableInstitution",
+      "@container": "@set"
+    },
+    "bflc:appliesTo": {
+      "@id": "http://id.loc.gov/ontologies/bflc/appliesTo",
+      "@container": "@set"
+    },
+    "bflc:citation": {
+      "@id": "http://id.loc.gov/ontologies/bflc/citation",
+      "@container": "@set"
+    },
+    "bflc:demographicGroup": {
+      "@id": "http://id.loc.gov/ontologies/bflc/demographicGroup",
+      "@container": "@set"
+    },
+    "bflc:encodingLevel": {
+      "@id": "http://id.loc.gov/ontologies/bflc/encodingLevel",
+      "@container": "@set"
+    },
+    "bflc:governmentPubType": {
+      "@id": "http://id.loc.gov/ontologies/bflc/governmentPubType",
+      "@container": "@set"
+    },
+    "bflc:marcKey": {
+      "@id": "http://id.loc.gov/ontologies/bflc/marcKey",
+      "@container": "@set"
+    },
+    "bflc:movingImageTechnique": {
+      "@id": "http://id.loc.gov/ontologies/bflc/movingImageTechnique",
+      "@container": "@set"
+    },
+    "bflc:nonSortNum": {
+      "@id": "http://id.loc.gov/ontologies/bflc/nonSortNum",
+      "@container": "@set"
+    },
+    "bflc:projectedProvisionDate": {
+      "@id": "http://id.loc.gov/ontologies/bflc/projectedProvisionDate",
+      "@container": "@set"
+    },
+    "bflc:serialPubType": {
+      "@id": "http://id.loc.gov/ontologies/bflc/serialPubType",
+      "@container": "@set"
+    },
+    "bflc:simpleAgent": {
+      "@id": "http://id.loc.gov/ontologies/bflc/simpleAgent",
+      "@container": "@set"
+    },
+    "bflc:simpleDate": {
+      "@id": "http://id.loc.gov/ontologies/bflc/simpleDate",
+      "@container": "@set"
+    },
+    "bflc:simplePlace": {
+      "@id": "http://id.loc.gov/ontologies/bflc/simplePlace",
+      "@container": "@set"
+    },
+    "mads:authoritativeLabel": {
+      "@id": "http://www.loc.gov/mads/rdf/v1#authoritativeLabel",
+      "@container": "@set"
+    },
+    "mads:componentList": {
+      "@id": "http://www.loc.gov/mads/rdf/v1#componentList"
+    },
+    "mads:elementList": {
+      "@id": "http://www.loc.gov/mads/rdf/v1#elementList"
+    },
+    "mads:elementValue": {
+      "@id": "http://www.loc.gov/mads/rdf/v1#elementValue",
+      "@container": "@set"
+    },
+    "mads:isMemberOfMADSScheme": {
+      "@id": "http://www.loc.gov/mads/rdf/v1#isMemberOfMADSScheme",
+      "@container": "@set"
+    },
+    "rdfs:label": {
+      "@id": "http://www.w3.org/2000/01/rdf-schema#label",
+      "@container": "@set"
+    },
+    "rdf:value": {
+      "@id": "http://www.w3.org/1999/02/22-rdf-syntax-ns#value",
+      "@container": "@set"
+    }
+  }
+}
