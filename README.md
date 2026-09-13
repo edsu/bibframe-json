@@ -1,128 +1,151 @@
 # bibframe-json
 
-Generates two artifacts from the BIBFRAME ontology: a JSON-LD context that pins
-the shape of Blue Core's JSON, and JSON Schema constraints derived from
-BIBFRAME's own domains and ranges.
+A predictable JSON shape for BIBFRAME, with the artifacts to validate and read
+it.
 
-**Status: a proposal, not a dependency.** Nothing in Blue Core uses this. Whether
-the approach is worth adopting is a team decision, so the point of this repo is
-to make the case checkable rather than to be imported. There is no library here —
-no readers, no accessors, no `validate()`.
+BIBFRAME is large and loosely constrained, and there are many ways to write it as
+JSON. This describes one shape, documents what that shape guarantees, and gives
+you models for reading it without walking dictionaries by hand. The shape is the
+framed JSON-LD Blue Core stores per resource — a Work, Instance, Hub or Item.
 
+It follows the [LOUD](https://linked.art/loud/) principles, and the
+`@container: @set` rule from
+[Linked Art](https://linked.art/api/1.0/json-ld/) in particular: if a property
+can ever have more than one value, it always has an array. That single decision
+is what makes everything else here possible.
+
+## What the shape guarantees
+
+- every property is an array, even with one value
+- references are plain URI strings, not `{"@id": ...}` wrappers
+- no blank node carries an `@id`
+- a value object has `@value` and at most one of `@type` or `@language`
+- `@type` is a list of classes on a node, and a datatype string on a value
+  object — tell them apart by whether `@value` is present
+
+## The JSON
+
+A stored Instance, abridged:
+
+```json
+{
+  "@id": "http://id.loc.gov/resources/instances/23867197",
+  "@type": ["Instance"],
+  "instanceOf": ["http://id.loc.gov/resources/works/23867197"],
+  "title": [
+    {
+      "@type": ["Title"],
+      "mainTitle": ["Minority voices from the academic superstructure"]
+    }
+  ],
+  "identifiedBy": [
+    { "@type": ["Lccn"], "rdf:value": ["  2024038899"] },
+    {
+      "@type": ["Isbn"],
+      "qualifier": ["hardcover"],
+      "rdf:value": ["9781668499092"]
+    }
+  ],
+  "provisionActivity": [
+    {
+      "@type": ["ProvisionActivity", "Publication"],
+      "bflc:simplePlace": ["Hershey, PA"],
+      "bflc:simpleDate": ["[2025]"]
+    }
+  ]
+}
 ```
-uv run python generate/from_ontology.py    # regenerate both artifacts
-uv run pytest                              # 17 tests, no corpus or network
+
+Note `instanceOf` — a bare URI, because the context declares it `@type: @id`.
+Six properties are written that way: `instanceOf`, `itemOf`, `hasItem`,
+`electronicLocator`, `generationProcess`, `descriptionLevel`.
+
+A literal keeps its language or its datatype when it has one:
+
+```json
+"title": [
+  { "@type": ["Title"], "mainTitle": ["Trudy Instituta Obshchcei Fiziki"] },
+  { "@type": ["Title"], "mainTitle": [
+      { "@value": "Труды Института Общц̳еи Физики", "@language": "ru-cyrl" }] }
+],
+"date": [{ "@value": "199X", "@type": "http://id.loc.gov/datatypes/edtf" }]
 ```
 
-    wrote schema/ontology.json
-      BIBFRAME 3.0.1
-      150 range constraints, 110 domain constraints
-      4 skipped by OVERRIDES
-    wrote context/bibframe.jsonld
-      249 terms declared; 6 as @type: @id; 2 skipped as rdf:List valued
+Both matter. Those two titles are one title in two scripts, and the language tag
+is the only thing telling them apart. And `date` carries three datatypes in real
+records — `xsd:date`, `xsd:dateTime` and EDTF — where EDTF encodes uncertainty,
+so `199X` is not a date that can be parsed as one.
 
-## The context: why generate it
+## From Python
 
-Phase 1 of `blue-core-lod/cbd/bluecore-json-shape-plan.md` calls for declaring
-`@container: @set` on every repeatable property, because compaction otherwise
-collapses a single value to a bare object and a consumer has to check the type of
-everything it touches — 66 of 134 properties came out both ways in a 300-record
-sample. JSON-LD has no way to set a default container, so every term has to be
-named, which is exactly the kind of enumeration a generator should do.
+```python
+from bibframe_json import Instance
 
-Declaring all of them is safe, and that is a measurement rather than a guess:
-BIBFRAME contains **zero** `owl:FunctionalProperty` declarations and **zero**
-cardinality restrictions across 226 properties, so nothing in it is
-single-valued.
+instance = Instance.model_validate(record)
 
-`@type: @id` is applied to only six properties — `instanceOf`, `itemOf`,
-`hasItem`, `electronicLocator`, `generationProcess`, `descriptionLevel` — because
-those are the ones measured as *always* a bare reference. Not `hasInstance`,
-despite `cbd-01.md` listing it: it is a string 262 times, a node with a URI 61
-times, and a node with no URI 39 times. Coercing a property that sometimes embeds
-produces a mix of strings and objects, which is the same inconsistency in
-different clothing.
+instance.main_title                  # "Minority voices from the academic superstructure"
+instance.instance_of[0]              # "http://id.loc.gov/resources/works/23867197"
 
-**Framing 150 real resources with this context and no code at all:** 0 triples
-changed, 0 keys left as a full URI, and one property left as a scalar —
-`mads:componentList`.
+[(i.kind, str(i.value[0]).strip())   # [("Lccn", "2024038899"),
+ for i in instance.identified_by]    #  ("Isbn", "9781668499092")]
 
-That exception is structural, and all three escapes are closed:
-`@container: @set` cannot hold a list object, so the processor skips the term;
-`@container: ["@list", "@set"]` says what is meant and pyld cannot expand it; and
-`@container: "@list"` **loses data** — a property holding two lists compacts to
-one, 6 triples becoming 3, silently. Real records do hold two, so that option is
-out. `componentList` and `elementList` stay undeclared.
+instance.provision_activity[0].simple_place[0]     # "Hershey, PA"
+```
 
-So a context gets 247 of 249 terms, and the residue is two list-valued properties
-plus `@type`, which is a keyword no container can reach.
+Literals behave as text but remember what they are:
 
-## The schema: why the ontology has to be read backwards
+```python
+title = instance.main_title
+str(title)            # the text, and what {{ title }} renders in a template
+title.language        # "ru-cyrl", or None
 
-`rdfs:domain` and `rdfs:range` under OWL are **inference rules, not
-constraints**. Asserting that `bf:title` has domain `bf:Work` does not make a
-non-Work invalid — it *infers* that the subject is a Work. They cannot be
-violated even in principle. So "validating against the BIBFRAME ontology" as OWL
-is a category error rather than a weak check.
+work.titles_in(None)         # the romanised forms
+work.titles_in("ru-cyrl")    # the vernacular ones
 
-SHACL's move is to read the same vocabulary the other way, as closed-world
-constraints. This does that, and emits the result as JSON Schema:
+date = instance.provision_activity[0].date[0]
+date.approximate      # True for EDTF: 199X, 1970?, intervals
+```
 
-    rdfs:range R   ->  a value of this property, if it says what it is, is typed
-                       R or one of R's subclasses
-    rdfs:domain D  ->  this property appears only on a node typed D or one of
-                       D's subclasses
+Models are open. BIBFRAME has 226 properties and real records use 136, so an
+unmodelled one is kept and reachable rather than rejected:
 
-Three properties of the output are worth knowing.
+```python
+work.get("bflc:aap")     # ["Prokhorov, A. M."]
+work.get("neverSeen")    # []
+```
 
-**It is pure JSON Schema.** Any JSON Schema library in any language can use
-`schema/ontology.json` with no code from here. That portability is the best thing
-about the approach, and it is what rules out expressing these as Pydantic
-validators — a `model_validator` does not appear in `model_json_schema()` at all,
-so the rule would be invisible to everyone using the published schema.
+`Work`, `Instance`, `Hub` and `Item` share a `Resource` base, so one set of
+template partials serves all four.
 
-**Subclass hierarchies are flattened at generation time.** Acceptable types are
-enumerated per property, so nothing walks a class tree to validate a document.
-`bf:title` accepts seven types and the schema lists all seven.
+## Validating
 
-**An untyped value is unknown, not wrong.** A reference the document only points
-at, carrying no type of its own, is not checkable, and calling it a violation
-would be reporting the validator's own ignorance.
+Two schemas, answering different questions. Both are plain JSON Schema, usable
+from any language.
 
-## How much it actually catches
+```python
+import json, jsonschema
 
-The part to read carefully, because the answer depends entirely on which artifact
-you point it at.
+dialect = jsonschema.Draft202012Validator(json.load(open("schema/dialect.json")))
+list(dialect.iter_errors(record))     # is this the shape we promised?
 
-**Against a full BIBFRAME graph** — a Concise Bounded Description from
-id.loc.gov, say — it has real purchase: 31,292 checkable assertions across 200
-records, **99.8% conforming**.
+ontology = jsonschema.Draft202012Validator(json.load(open("schema/ontology.json")))
+list(ontology.iter_errors(record))    # does it respect BIBFRAME's domains and ranges?
+```
 
-**Against Blue Core's stored per-resource JSON it finds nothing at all**: 0
-findings in 200 resources. Not because that data is clean.
+`schema/dialect.json` is structural: arrays, references, value objects, blank
+nodes. It says nothing about which BIBFRAME types may appear where, so a record
+can satisfy it and still put an `Agent` where a `Title` belongs.
 
-| Value shape in stored resources | Count |
-| --- | --- |
-| literal (plain string) | 14,021 |
-| **bare reference, no `@type`** | **5,245** |
-| node with `@type` (checkable) | 3,501 |
-| literal (value object) | 771 |
+`schema/ontology.json` is that second question, generated from BIBFRAME's own
+`rdfs:domain` and `rdfs:range`. Those are *inference rules* under OWL — asserting
+that `bf:title` has domain `bf:Work` does not make a non-Work invalid, it infers
+the subject is a Work — so they cannot be violated as written. This reads them as
+closed-world constraints instead, the way SHACL does, and emits the result as
+JSON Schema.
 
-Only **39% of node values carry a `@type`** a range constraint can check. Blue
-Core keeps a referenced resource's description in its own row, so what remains in
-the referring record is a bare `{"@id": ...}`. The 31 genuine violations in that
-corpus — `bf:source` pointing at a `mads:Authority` — live in the source graph
-and are absent from the stored slice.
-
-So point this at source graphs. Over stored per-resource JSON what survives is
-domain constraints, since a node's own `@type` is always present, and literal
-ranges, which need no target type — thin, but not nothing.
-
-## The four exclusions
-
-`OVERRIDES` in the generator skips four constraints and records in the output
-what was skipped and why. Each is a property where **every** real use violates
-the flipped constraint, which makes the ontology the likelier culprit:
+Its findings are warnings rather than errors. Four constraints are excluded
+outright, listed in `OVERRIDES` with reasons, because every real use violates
+them and the ontology is the likelier culprit:
 
 | Property | Ontology says | Every real use |
 | --- | --- | --- |
@@ -131,62 +154,46 @@ the flipped constraint, which makes the ontology the likelier culprit:
 | `bf:ensembleSize` | domain `bf:Work` | `bf:Ensemble` |
 | `bf:mediumOfPerformance` | range `bf:MediumOfPerformance` | `mads:Medium` |
 
-Music and cartographic modelling the ontology has not caught up with, plus MADS
-classes it does not reference. A useful side effect of the flip is that it finds
-ontology bugs as readily as data bugs, and `bf:relief` looks worth reporting
-upstream.
+The flip also has most purchase over a full BIBFRAME graph rather than a stored
+resource: 99.8% of assertions conform in a CBD from id.loc.gov, while in a stored
+per-resource record only 39% of node values carry a `@type` a range can check —
+Blue Core keeps a referenced resource's description in its own row.
 
-## Regenerating
-
-`generate/bibframe.rdf` is vendored — BIBFRAME 3.0.1, issued 2025-12-03 — so
-regenerating against a new release is a reviewable diff rather than a surprise.
-The generated file records which version produced it.
-
-`rdflib` is a dev dependency only — the ontology is read at build time, and
-nothing at runtime parses RDF. The committed artifacts are plain JSON.
-
-## Checking the claims
-
-`uv run pytest` covers what can be checked without the corpus: that the schema is
-valid, that the four exclusions are recorded with reasons, that the flip behaves
-correctly across nine cases, and that the context declares what it says it does.
-
-Two of those tests exist because this schema twice reported *nothing at all*
-while looking like it worked — first with no recursion, then with recursion
-reaching only properties that have a declared range. A schema that silently
-checks nothing scores a perfect 100%.
-
-The corpus measurements need the Blue Core ingest archive and are not in the test
-suite. To reproduce them:
+## What is generated, and what is not
 
 ```
-uv run --with-editable ../bluecore-models --with rdflib python - <<'EOF'
-# frame entity graphs from uploads/batch_00001.tar.gz with context/bibframe.jsonld
-# and count: triples changed, scalars remaining, full-URI keys
-EOF
+context/bibframe.jsonld   generated   249 terms: @container: @set, @type: @id
+schema/ontology.json      generated   150 range + 110 domain constraints
+schema/dialect.json       generated   from the models, plus three hand-written rules
+bibframe_json/models.py   written     Pydantic models and their helpers
+generate/bibframe.rdf     vendored    BIBFRAME 3.0.1, issued 2025-12-03
 ```
 
-## Where this is going
+```
+uv run python generate/from_ontology.py    # context + ontology schema
+uv run python generate/dialect.py          # dialect schema
+uv run pytest                              # 44 tests, no corpus or network
+```
 
-Unsettled. This began as a standalone library for reading and validating Blue
-Core's stored JSON shape, and two things changed that.
+Enumerating 249 `@container` declarations is mechanical, so it is generated;
+deciding which properties a template needs is editorial, so the models are
+written by hand. `rdflib` is a dev dependency — the ontology is read at build
+time and nothing at runtime parses RDF.
 
-The generator turned out to have little purchase on the stored shape — the 39%
-above — and belongs over source graphs instead, which is the SHACL slot in the
-Blue Core plan rather than a JSON Schema library.
-
-And that plan, `blue-core-lod/cbd/bluecore-json-shape-plan.md`, already covers
-the JSON side more thoroughly: context-first `@container: @set`, Pydantic as
-source of truth, JSON Schema over framed output, grounded in how Linked Art and
-IIIF solved the same problems. `blue-core-lod/cbd/json-shape-amendments.md`
-records what measurement changed about it.
-
-So the flip mechanism and the `OVERRIDES` list are the parts worth keeping,
-wherever they end up living. Whether that is this repo is an open question.
+Three rules in `schema/dialect.json` are hand-written rather than emitted by
+Pydantic, because a Pydantic validator never appears in `model_json_schema()`:
+that a literal may be a bare string, that a reference may be a bare URI, and that
+`@type` may be a string. Without them the schema rejects what its own models
+accept.
 
 ## Caveat on the numbers
 
-Everything measured here comes from the first few hundred records of
-`../bluecore-models/uploads/batch_00001.tar.gz` in tar order — at most 500 of
-roughly 350,000, one of 35 batches, and not verified to be an unstratified
-sample. Worth re-running across batches before treating any figure as settled.
+Measurements here come from the first few hundred records of one batch of the
+Blue Core ingest archive, in archive order — at most 500 of roughly 350,000, and
+not verified to be a representative sample.
+
+## Status
+
+A proposal. Nothing in Blue Core depends on this yet; whether the shape is worth
+adopting is a decision still to be made. The broader plan it belongs to is
+`blue-core-lod/cbd/bluecore-json-shape-plan.md`.
