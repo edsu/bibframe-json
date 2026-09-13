@@ -1,5 +1,7 @@
 # bibframe-json
 
+[![Test](https://github.com/edsu/bibframe-json/actions/workflows/test.yml/badge.svg)](https://github.com/edsu/bibframe-json/actions/workflows/test.yml)
+
 *bibframe-json* provides a predictable, opinionated JSON shape for [BIBFRAME]
 data. The goal is to make BIBFRAME data more accessible to people who want to
 parse it as JSON without needing an RDF processing library, and knowledge of
