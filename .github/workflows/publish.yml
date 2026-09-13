@@ -1,0 +1,48 @@
+name: Publish to PyPI
+
+# Requires this repo to be registered as a trusted publisher on PyPI, so no
+# API token is needed: https://docs.pypi.org/trusted-publishers/
+
+on:
+  release:
+    types:
+      published
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    environment:
+      name: pypi
+      url: https://pypi.org/p/bibframe-json
+
+    permissions:
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      # Don't publish something that doesn't pass its own tests.
+      - name: Check
+        run: |
+          uv run ruff format --diff
+          uv run ruff check
+          uv run ty check
+          uv run pytest
+
+      # The schemas and context are what the package is for, so a release must
+      # not ship ones that drifted from the generator that claims to produce
+      # them.
+      - name: Generated artifacts match their generators
+        run: |
+          uv run python generate/from_ontology.py
+          uv run python generate/dialect.py
+          git diff --exit-code context/ schema/
+
+      - name: Publish
+        run: |
+          uv build
+          uv publish

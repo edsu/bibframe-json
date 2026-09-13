@@ -41,7 +41,10 @@ def test_schema_records_its_provenance():
     """
     assert SCHEMA["x-bibframe-version"] == "3.0.1"
     assert "GENERATED" in SCHEMA["$comment"]
-    assert SCHEMA["x-generated"]
+    assert "x-generated" not in SCHEMA, (
+        "no timestamp: the output has to be byte-identical on every run, or CI "
+        "cannot check that the committed artifacts match the generator"
+    )
 
 
 def test_the_four_exclusions_are_recorded():

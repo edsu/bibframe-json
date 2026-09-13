@@ -17,6 +17,7 @@ dev = [
     "rdflib>=7.1.3",
     "pytest>=8.3.4",
     "ruff>=0.9.6",
+    "ty>=0.0.1a1",
 ]
 
 [tool.pytest.ini_options]
@@ -37,3 +38,9 @@ packages = ["bibframe_json"]
 # The generated schema ships with the library; the generator and the ontology
 # it reads do not.
 include = ["bibframe_json/**", "schema/**"]
+
+[tool.ruff]
+# Leave Markdown alone. `ruff format` reformats Python code blocks inside it,
+# which flattens the aligned comments the README's examples rely on to line the
+# results up against the calls.
+extend-exclude = ["*.md"]

@@ -1,0 +1,45 @@
+name: Test
+on:
+  - push
+  - pull_request
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+
+      - name: checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Formatting
+        run: uv run ruff format --diff
+
+      - name: Linting
+        run: uv run ruff check
+
+      - name: Type Checking
+        run: uv run ty check
+
+      - name: Tests
+        run: uv run pytest
+
+      # The committed context and schemas are generated, so an edit to
+      # generate/ or to models.py that was not followed by a regeneration leaves
+      # the repo describing a shape it no longer produces. Regenerating and
+      # diffing catches that. The generators emit no timestamp, so a clean tree
+      # here means the artifacts really do match their inputs.
+      - name: Generated artifacts match their generators
+        run: |
+          uv run python generate/from_ontology.py
+          uv run python generate/dialect.py
+          git diff --exit-code context/ schema/
