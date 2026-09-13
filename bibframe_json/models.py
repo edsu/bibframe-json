@@ -11,7 +11,13 @@ URI strings, `@type` is a list. Where a record predates that, the validators
 below still accept the older shape -- a record restored from a backup will carry
 it long after any backfill.
 
-Two things to know before reading further.
+Three things to know before reading further.
+
+**These parse; they do not judge.** No rule about the shape is enforced here --
+not the blank node rule, not the one about value objects carrying a single tag.
+A record that breaks either still loads. Those rules live in
+schema/dialect.json, and `validate()` reports them. Enforcing a few of them here
+too would make load() unpredictable and put each rule in two places.
 
 **Models are open, not closed.** `extra="allow"` throughout. BIBFRAME has 226
 properties and the data uses 136; modelling the dozen that templates care about
@@ -71,20 +77,17 @@ class Text(BaseModel):
             return {"@value": data}
         return data
 
-    @model_validator(mode="after")
-    def not_both_tags(self) -> "Text":
-        """A value object carries at most one of @type or @language.
-
-        Required by JSON-LD and confirmed in the data: 703 with a datatype, 68
-        with a language, none with both.
-
-        Note this rule does *not* appear in `model_json_schema()` -- a
-        model_validator never does. It has to be written into the dialect schema
-        separately, or consumers of that schema will not have it.
-        """
-        if self.datatype and self.language:
-            raise ValueError("@type and @language are mutually exclusive")
-        return self
+    # A value object carries at most one of @type or @language -- required by
+    # JSON-LD, and confirmed in the data: 703 with a datatype, 68 with a
+    # language, none with both. That rule is *not* enforced here, and the
+    # omission is deliberate.
+    #
+    # These models parse; schema/dialect.json judges. A model_validator here
+    # would make one rule of several behave differently from the rest, so a
+    # caller could not predict what load() refuses -- and it would put the rule
+    # in two places, since a validator never reaches model_json_schema() and it
+    # has to be written into the schema regardless. Call validate() to be told
+    # about it.
 
     @property
     def approximate(self) -> bool:

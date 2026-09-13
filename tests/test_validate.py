@@ -163,3 +163,40 @@ def test_the_type_noise_from_a_failing_anyof_is_dropped():
     finding."""
     findings = validate({**CLEAN, "subject": [{"@id": "_:b0"}]}, ontology=False)
     assert len(findings) == 1, [str(f) for f in findings]
+
+
+def test_validate_reports_what_the_models_let_through():
+    """The other half of test_the_models_parse_rather_than_judge.
+
+    Those two rules are enforced in exactly one place each, and this is it. If
+    the models ever start rejecting them, the pair of tests will disagree and
+    say so.
+    """
+    record = {
+        **CLEAN,
+        "subject": [{"@id": "_:b0"}],
+        "title": [
+            {
+                "@type": ["Title"],
+                "mainTitle": [
+                    {"@value": "x", "@type": "xsd:string", "@language": "en"}
+                ],
+            }
+        ],
+    }
+    load(record)  # parses
+    messages = [f.message for f in validate(record, ontology=False)]
+    assert any("blank node" in m for m in messages), messages
+    assert any("at most one of @type or @language" in m for m in messages), messages
+
+
+def test_unmodelled_properties_must_still_be_arrays():
+    """The guarantee the whole shape rests on, for the properties that have no
+    field: about 120 of the 136 in real records.
+
+    pydantic emits additionalProperties: true for extra="allow", so before this
+    was constrained only the dozen modelled properties were checked.
+    """
+    findings = validate({**CLEAN, "bflc:aap": "not a list"}, ontology=False)
+    assert [f.path for f in findings] == ["bflc:aap"]
+    assert validate({**CLEAN, "bflc:aap": ["a list"]}, ontology=False) == []

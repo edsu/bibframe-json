@@ -10,7 +10,6 @@ import json
 
 import jsonschema
 import pytest
-from pydantic import ValidationError
 
 from bibframe_json import EDTF, Instance, Ref, Text, Work, schema
 
@@ -161,11 +160,26 @@ def test_a_literal_keeps_its_datatype():
     assert str(approximate) == "199X", "and still behaves as its text"
 
 
-def test_a_value_object_cannot_carry_both_tags():
-    """Required by JSON-LD, and never seen in the data: 703 with a datatype, 68
-    with a language, none with both."""
-    with pytest.raises(ValidationError):
-        Text.model_validate({"@value": "x", "@type": "xsd:string", "@language": "en"})
+def test_the_models_parse_rather_than_judge():
+    """A record breaking the shape rules still loads, deliberately.
+
+    Required by JSON-LD and never seen in the data -- 703 value objects with a
+    datatype, 68 with a language, none with both -- but the rule lives in
+    schema/dialect.json rather than here. Enforcing a few rules in the models
+    and the rest in the schema would make load() unpredictable, and would put
+    each rule in two places since a validator never reaches
+    model_json_schema().
+
+    validate() is what reports it, and test_validate.py asserts that it does.
+    """
+    both = {"@value": "x", "@type": "xsd:string", "@language": "en"}
+    text = Text.model_validate(both)
+    assert text.datatype and text.language, "parsed, not judged"
+
+    blank = Work.model_validate(
+        {"@id": "https://x/1", "@type": ["Work"], "subject": [{"@id": "_:b0"}]}
+    )
+    assert blank.subject[0].uri == "_:b0", "likewise"
 
 
 def test_main_title_prefers_a_title_over_a_variant():

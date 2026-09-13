@@ -19,7 +19,10 @@
   ],
   "$defs": {
     "Contribution": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -67,7 +70,10 @@
       "type": "object"
     },
     "Identifier": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -122,7 +128,10 @@
       "type": "object"
     },
     "Node": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "description": "Anything with a @type and properties: the shape all of these share.",
       "properties": {
         "@id": {
@@ -271,12 +280,15 @@
               "@language"
             ]
           },
-          "$comment": "A value object carries at most one of @type or @language, never both: required by JSON-LD and confirmed in the data -- 703 with a datatype, 68 with a language, none with both. Enforced in Python by Text.not_both_tags, which the generated schema does not carry."
+          "$comment": "A value object carries at most one of @type or @language, never both: required by JSON-LD and confirmed in the data -- 703 with a datatype, 68 with a language, none with both. Written here rather than as a model validator: the models parse and this judges, and a validator would not reach model_json_schema() anyway."
         }
       ]
     },
     "Title": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -338,7 +350,10 @@
       "type": "object"
     },
     "Work": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -449,7 +464,10 @@
       "type": "object"
     },
     "ProvisionActivity": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -511,7 +529,10 @@
       "type": "object"
     },
     "Instance": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -615,7 +636,10 @@
       "type": "object"
     },
     "Hub": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [
@@ -698,7 +722,10 @@
       "type": "object"
     },
     "Item": {
-      "additionalProperties": true,
+      "additionalProperties": {
+        "$comment": "A property with no field in the models is still a property, so it is still an array. Without this the guarantee holds only for the properties that happen to be modelled.",
+        "type": "array"
+      },
       "properties": {
         "@id": {
           "anyOf": [

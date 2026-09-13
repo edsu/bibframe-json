@@ -32,6 +32,31 @@ OUTPUT = HERE.parent / "bibframe_json" / "schema" / "dialect.json"
 MODELS = {"Work": Work, "Instance": Instance, "Hub": Hub, "Item": Item}
 
 
+def require_arrays(definition: dict) -> dict:
+    """Every unmodelled property must still be an array.
+
+    The core guarantee of the shape, and it was going unchecked for most of the
+    data: pydantic emits `additionalProperties: true` for extra="allow", so only
+    the dozen properties with fields were constrained while the other 120-odd in
+    real records passed whatever they liked.
+
+    Applied to node definitions only, not to Text. A value object's extra keys
+    are JSON-LD keywords rather than BIBFRAME properties -- @index and the like
+    -- and those are not arrays.
+    """
+    return {
+        **definition,
+        "additionalProperties": {
+            "$comment": (
+                "A property with no field in the models is still a property, so "
+                "it is still an array. Without this the guarantee holds only for "
+                "the properties that happen to be modelled."
+            ),
+            "type": "array",
+        },
+    }
+
+
 def tolerate_scalar_type(definition: dict) -> dict:
     """Accept @type as a string as well as an array.
 
@@ -92,8 +117,9 @@ def wrap_text(generated: dict) -> dict:
                     "A value object carries at most one of @type or @language, "
                     "never both: required by JSON-LD and confirmed in the data "
                     "-- 703 with a datatype, 68 with a language, none with "
-                    "both. Enforced in Python by Text.not_both_tags, which the "
-                    "generated schema does not carry."
+                    "both. Written here rather than as a model validator: the "
+                    "models parse and this judges, and a validator would not "
+                    "reach model_json_schema() anyway."
                 ),
             },
         ],
@@ -162,10 +188,12 @@ def build() -> dict:
             raise SystemExit(f"cannot wrap missing definition {name!r}")
         defs[name] = wrap(defs[name])
 
-    # every node-ish definition tolerates a scalar @type
+    # every node-ish definition tolerates a scalar @type and requires that its
+    # unmodelled properties are arrays. Text is neither: it is a value object,
+    # whose extra keys are keywords rather than properties.
     for name, definition in list(defs.items()):
         if name not in WRAPPERS:
-            defs[name] = tolerate_scalar_type(definition)
+            defs[name] = require_arrays(tolerate_scalar_type(definition))
 
     return {
         "$schema": "https://json-schema.org/draft/2020-12/schema",
