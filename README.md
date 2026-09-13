@@ -108,10 +108,10 @@ record says it is:
 ```python
 import json
 
-from bibframe_json import load
+import bibframe_json
 
-record = json.loads(open("instance.json").read())
-instance = load(record)                            # a Work, Instance, Hub or Item
+record = json.load(open("instance.json"))
+instance = bibframe_json.load(record)                            # a Work, Instance, Hub or Item
 
 instance.main_title                  # "Minority voices from the academic superstructure"
 instance.instance_of[0]              # "http://id.loc.gov/resources/works/23867197"
@@ -163,9 +163,7 @@ accepts the rest, since of the 136 properties in real records only about a dozen
 have fields. A record can load perfectly and still be malformed.
 
 ```python
-from bibframe_json import validate
-
-for finding in validate(record):
+for finding in bibframe_json.validate(record):
     print(finding)
 
 # [dialect] subject/0: a blank node must not carry an @id
