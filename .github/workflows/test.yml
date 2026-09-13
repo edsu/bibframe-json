@@ -42,4 +42,4 @@ jobs:
         run: |
           uv run python generate/from_ontology.py
           uv run python generate/dialect.py
-          git diff --exit-code context/ schema/
+          git diff --exit-code bibframe_json/context bibframe_json/schema

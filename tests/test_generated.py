@@ -8,15 +8,13 @@ Blue Core ingest archive — so they are reported with their sample size and the
 command to reproduce them instead.
 """
 
-import json
-from pathlib import Path
-
 import jsonschema
 import pytest
 
-ROOT = Path(__file__).resolve().parent.parent
-SCHEMA = json.loads((ROOT / "schema" / "ontology.json").read_text())
-CONTEXT = json.loads((ROOT / "context" / "bibframe.jsonld").read_text())["@context"]
+from bibframe_json import context, schema
+
+SCHEMA = schema("ontology")
+CONTEXT = context()["@context"]
 
 BF = "http://id.loc.gov/ontologies/bibframe/"
 

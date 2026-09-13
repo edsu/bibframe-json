@@ -7,16 +7,14 @@ easy to open, since a Pydantic validator never appears in
 """
 
 import json
-from pathlib import Path
 
 import jsonschema
 import pytest
 from pydantic import ValidationError
 
-from bibframe_json import EDTF, Instance, Ref, Text, Work
+from bibframe_json import EDTF, Instance, Ref, Text, Work, schema
 
-ROOT = Path(__file__).resolve().parent.parent
-DIALECT = json.loads((ROOT / "schema" / "dialect.json").read_text())
+DIALECT = schema("dialect")
 
 
 @pytest.fixture(scope="module")

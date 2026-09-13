@@ -34,8 +34,8 @@ from rdflib import OWL, RDF, RDFS, Graph, URIRef
 
 HERE = Path(__file__).resolve().parent
 ONTOLOGY = HERE / "bibframe.rdf"
-OUTPUT = HERE.parent / "schema" / "ontology.json"
-CONTEXT_OUTPUT = HERE.parent / "context" / "bibframe.jsonld"
+OUTPUT = HERE.parent / "bibframe_json" / "schema" / "ontology.json"
+CONTEXT_OUTPUT = HERE.parent / "bibframe_json" / "context" / "bibframe.jsonld"
 
 BF = "http://id.loc.gov/ontologies/bibframe/"
 ONTOLOGY_IRI = URIRef(BF)

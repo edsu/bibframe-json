@@ -34,10 +34,10 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["bibframe_json"]
 
-[tool.hatch.build]
-# The generated schema ships with the library; the generator and the ontology
-# it reads do not.
-include = ["bibframe_json/**", "schema/**"]
+# The schemas and the context are the artifacts this package exists to publish,
+# so they live inside bibframe_json/ and hatchling ships them with the package.
+# They used to sit at the top level, where `packages` excluded them and an
+# installed copy had neither -- and no force-include is needed now they are in.
 
 [tool.ruff]
 # Leave Markdown alone. `ruff format` reformats Python code blocks inside it,

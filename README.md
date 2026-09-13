@@ -98,14 +98,20 @@ so `199X` is not a date that can be parsed as one.
 
 ## From Python
 
-To simplify usage of the data from Python, a Pydantic schema is included that
-allows validation, and provides some helper properties to access the data
-without needing to hunt and peck in the JSON.
+To simplify usage of the data from Python, Pydantic models are included that
+provide helper properties for accessing the data without needing to hunt and
+peck in the JSON.
+
+`load()` takes a `dict` of parsed JSON and returns the model for whatever the
+record says it is:
 
 ```python
-from bibframe_json import Instance
+import json
 
-instance = Instance.model_validate(record)
+from bibframe_json import load
+
+record = json.loads(open("instance.json").read())
+instance = load(record)                            # a Work, Instance, Hub or Item
 
 instance.main_title                  # "Minority voices from the academic superstructure"
 instance.instance_of[0]              # "http://id.loc.gov/resources/works/23867197"
@@ -141,26 +147,52 @@ work.get("neverSeen")    # []
 `Work`, `Instance`, `Hub` and `Item` share a `Resource` base, so one set of
 template partials serves all four.
 
-## Validating
-
-Two schemas are provided which answer different questions. Both are plain JSON Schema, usable
-from any language.
+If you want a particular type rather than whatever the record claims, the models
+take a dict or JSON text directly:
 
 ```python
-import json, jsonschema
-
-dialect = jsonschema.Draft202012Validator(json.load(open("schema/dialect.json")))
-list(dialect.iter_errors(record))     # is this the shape we promised?
-
-ontology = jsonschema.Draft202012Validator(json.load(open("schema/ontology.json")))
-list(ontology.iter_errors(record))    # does it respect BIBFRAME's domains and ranges?
+Instance.model_validate(record)          # a dict
+Instance.model_validate_json(text)       # JSON text, no json.loads needed
 ```
 
-`schema/dialect.json` is structural: arrays, references, value objects, blank
+## Validating
+
+`load()` **parses**; `validate()` **judges**. They are not the same, and the
+difference is worth keeping in mind: parsing checks field types and quietly
+accepts the rest, since of the 136 properties in real records only about a dozen
+have fields. A record can load perfectly and still be malformed.
+
+```python
+from bibframe_json import validate
+
+for finding in validate(record):
+    print(finding)
+
+# [dialect] subject/0: a blank node must not carry an @id
+# [ontology] the record: mainTitle does not belong on ['Work'] according to its rdfs:domain
+```
+
+Each `Finding` has a `layer`, a `path` and a `message`, and `is_error` is true
+for the dialect layer. Either layer can be asked for on its own —
+`validate(record, ontology=False)` is the useful gate in a pipeline, since those
+are the guarantees a consumer depends on.
+
+The two schemas ship with the package and answer different questions. Both are
+plain JSON Schema, usable from any language:
+
+```python
+from bibframe_json import context, schema
+
+schema("dialect")     # the shape
+schema("ontology")    # BIBFRAME's domains and ranges, as constraints
+context()             # the JSON-LD context that produces the shape
+```
+
+The dialect schema is structural: arrays, references, value objects, blank
 nodes. It says nothing about which BIBFRAME types may appear where, so a record
 can satisfy it and still put an `Agent` where a `Title` belongs.
 
-`schema/ontology.json` is that second question, generated from the
+The ontology schema is that second question, generated from the
 `rdfs:domain` and `rdfs:range` statements in BIBFRAME's vocabulary. Those are
 *inference rules* under OWL. So asserting that `bf:title` has domain `bf:Work`
 does not make a non-Work invalid, it infers the subject is a Work. We read them
@@ -186,11 +218,11 @@ Blue Core keeps a referenced resource's description in its own row.
 ## What is generated, and what is not
 
 ```
-context/bibframe.jsonld   generated   249 terms: @container: @set, @type: @id
-schema/ontology.json      generated   150 range + 110 domain constraints
-schema/dialect.json       generated   from the models, plus three hand-written rules
-bibframe_json/models.py   written     Pydantic models and their helpers
-generate/bibframe.rdf     vendored    BIBFRAME 3.0.1, issued 2025-12-03
+bibframe_json/context/bibframe.jsonld  generated   249 terms: @container: @set, @type: @id
+bibframe_json/schema/ontology.json     generated   150 range + 110 domain constraints
+bibframe_json/schema/dialect.json      generated   from the models, plus three hand-written rules
+bibframe_json/models.py                written     Pydantic models and their helpers
+generate/bibframe.rdf                  vendored    BIBFRAME 3.0.1, issued 2025-12-03
 ```
 
 ```

@@ -27,7 +27,7 @@ from pathlib import Path
 from bibframe_json.models import Hub, Instance, Item, Work
 
 HERE = Path(__file__).resolve().parent
-OUTPUT = HERE.parent / "schema" / "dialect.json"
+OUTPUT = HERE.parent / "bibframe_json" / "schema" / "dialect.json"
 
 MODELS = {"Work": Work, "Instance": Instance, "Hub": Hub, "Item": Item}
 
