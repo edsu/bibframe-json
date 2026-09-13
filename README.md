@@ -1,14 +1,17 @@
 # bibframe-json
 
-A predictable JSON shape for BIBFRAME, with the artifacts to validate and read
-it.
+*bibframe-json* provides a predictable, opinionated JSON shape for [BIBFRAME]
+data. The goal is to make BIBFRAME data more accessible to people who want to
+parse it as JSON without needing an RDF processing library, and knowledge of
+the RDF data model. But perhaps it will also function as a gateway for people
+who want to take a step beyond the JSON to learn more.
 
 BIBFRAME is large and loosely constrained, and there are many ways to write it as
-JSON. This describes one shape, documents what that shape guarantees, and gives
+RDF and JSON-LD. bibframe-json describes one shape, documents what that shape guarantees, and gives
 you models for reading it without walking dictionaries by hand. The shape is the
-framed JSON-LD Blue Core stores per resource — a Work, Instance, Hub or Item.
+framed JSON-LD Blue Core stores per resource: a Work, Instance, Hub or Item.
 
-It follows the [LOUD](https://linked.art/loud/) principles, and the
+bibframe-json follows the [LOUD](https://linked.art/loud/) principles, and the
 `@container: @set` rule from
 [Linked Art](https://linked.art/api/1.0/json-ld/) in particular: if a property
 can ever have more than one value, it always has an array. That single decision
@@ -25,7 +28,7 @@ is what makes everything else here possible.
 
 ## The JSON
 
-A stored Instance, abridged:
+Here's what an abridged JSON Instance looks like:
 
 ```json
 {
@@ -56,7 +59,7 @@ A stored Instance, abridged:
 }
 ```
 
-Note `instanceOf` — a bare URI, because the context declares it `@type: @id`.
+Note `instanceOf` has a bare URI, because the context declares it `@type: @id`.
 Six properties are written that way: `instanceOf`, `itemOf`, `hasItem`,
 `electronicLocator`, `generationProcess`, `descriptionLevel`.
 
@@ -71,12 +74,16 @@ A literal keeps its language or its datatype when it has one:
 "date": [{ "@value": "199X", "@type": "http://id.loc.gov/datatypes/edtf" }]
 ```
 
-Both matter. Those two titles are one title in two scripts, and the language tag
+Those two titles are one title in two scripts, and the language tag
 is the only thing telling them apart. And `date` carries three datatypes in real
 records — `xsd:date`, `xsd:dateTime` and EDTF — where EDTF encodes uncertainty,
 so `199X` is not a date that can be parsed as one.
 
 ## From Python
+
+To simplify usage of the data from Python, a Pydantic schema is included that
+allows validation, and provides some helper properties to access the data
+without needing to hunt and peck in the JSON.
 
 ```python
 from bibframe_json import Instance
@@ -106,8 +113,8 @@ date = instance.provision_activity[0].date[0]
 date.approximate      # True for EDTF: 199X, 1970?, intervals
 ```
 
-Models are open. BIBFRAME has 226 properties and real records use 136, so an
-unmodelled one is kept and reachable rather than rejected:
+The models themselves are open. BIBFRAME has 226 properties and real records
+use 136, so an unmodeled one is kept and reachable rather than rejected:
 
 ```python
 work.get("bflc:aap")     # ["Prokhorov, A. M."]
@@ -119,7 +126,7 @@ template partials serves all four.
 
 ## Validating
 
-Two schemas, answering different questions. Both are plain JSON Schema, usable
+Two schemas are provided which answer different questions. Both are plain JSON Schema, usable
 from any language.
 
 ```python
@@ -136,12 +143,12 @@ list(ontology.iter_errors(record))    # does it respect BIBFRAME's domains and r
 nodes. It says nothing about which BIBFRAME types may appear where, so a record
 can satisfy it and still put an `Agent` where a `Title` belongs.
 
-`schema/ontology.json` is that second question, generated from BIBFRAME's own
-`rdfs:domain` and `rdfs:range`. Those are *inference rules* under OWL — asserting
-that `bf:title` has domain `bf:Work` does not make a non-Work invalid, it infers
-the subject is a Work — so they cannot be violated as written. This reads them as
-closed-world constraints instead, the way SHACL does, and emits the result as
-JSON Schema.
+`schema/ontology.json` is that second question, generated from the
+`rdfs:domain` and `rdfs:range` statements in BIBFRAME's vocabulary. Those are
+*inference rules* under OWL. So asserting that `bf:title` has domain `bf:Work`
+does not make a non-Work invalid, it infers the subject is a Work. We read them
+as closed-world constraints instead, the way SHACL does, and emits the result
+as JSON Schema.
 
 Its findings are warnings rather than errors. Four constraints are excluded
 outright, listed in `OVERRIDES` with reasons, because every real use violates
@@ -186,14 +193,13 @@ that a literal may be a bare string, that a reference may be a bare URI, and tha
 `@type` may be a string. Without them the schema rejects what its own models
 accept.
 
-## Caveat on the numbers
-
-Measurements here come from the first few hundred records of one batch of the
-Blue Core ingest archive, in archive order — at most 500 of roughly 350,000, and
-not verified to be a representative sample.
-
 ## Status
 
-A proposal. Nothing in Blue Core depends on this yet; whether the shape is worth
-adopting is a decision still to be made. The broader plan it belongs to is
-`blue-core-lod/cbd/bluecore-json-shape-plan.md`.
+This is meant to be updated both as BIBFRAME changes and as needs for making
+the data more accessible from Python change. Please send issues and PRs when
+things are needed. The project is being built primarily for use cases in the
+[Blue Core] project, but the overarching goal is to make BIBFRAME more
+accessible as JSON.
+
+[BIBFRAME]: https://bibframe.org
+[Blue Core]: https://bluecore.info/
